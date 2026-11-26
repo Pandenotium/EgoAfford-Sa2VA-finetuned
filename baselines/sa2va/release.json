@@ -1,0 +1,22 @@
+{
+  "release": "v2",
+  "status": "private_code_review",
+  "backbone": "InternVL3-8B",
+  "segmenter": "SAM2-Hiera-L",
+  "upstream_commit": "b6fed1a7928ad4adfa124f1fe79031c1f58ec7a1",
+  "initialization": "components",
+  "prompt": "full_rule",
+  "absent_role_policy": "emit_empty",
+  "training_samples": 39956,
+  "validation_samples": 778,
+  "selected_epoch": 18,
+  "expected_ciou": {
+    "real": 0.6112409121889908,
+    "synthetic": 0.6716102716741557
+  },
+  "model_files": [],
+  "training_entrypoint": "scripts/train.sh",
+  "inference_entrypoint": "scripts/predict.py",
+  "config": "configs/sa2va_8b.json",
+  "checkpoint_verification": "fresh-checkout GPU smoke test pending"
+}

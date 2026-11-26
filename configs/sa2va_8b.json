@@ -1,0 +1,29 @@
+{
+  "upstream": "third_party/sa2va",
+  "backbone": "pretrained/InternVL3-8B",
+  "official_checkpoint": null,
+  "sam2": "pretrained/sam2_hiera_large.pt",
+  "train": "data/manifests/train.jsonl",
+  "val": "data/manifests/real_val.jsonl",
+  "count": 39956,
+  "epochs": 40,
+  "effective_batch": 32,
+  "micro_batch": 2,
+  "inference_batch": 16,
+  "seed": 42,
+  "id": "egoafford-sa2va-8b",
+  "initialization": "components",
+  "prompt": "full_rule",
+  "policy": "emit_empty",
+  "run": "outputs/sa2va-8b",
+  "tests": {
+    "real": {
+      "path": "data/manifests/real_test.jsonl",
+      "samples": 2215
+    },
+    "synthetic": {
+      "path": "data/manifests/synthetic_test.jsonl",
+      "samples": 488
+    }
+  }
+}
