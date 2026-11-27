@@ -1,3 +1,6 @@
+# Modified for the EgoAfford release (2026): portable manifest and mask compatibility.
+# SPDX-License-Identifier: Apache-2.0
+# See THIRD_PARTY_NOTICES.md and docs/SOURCE_PROVENANCE.md.
 import json
 import os
 import re
@@ -39,13 +42,16 @@ def rows(path):
     out=[json.loads(s) for s in Path(path).read_text().splitlines() if s.strip()]
     root=Path(os.environ.get('EGOAFFORD_DATA_ROOT', Path(path).resolve().parent)).resolve()
     for row in out:
-        for key in ('image', 'mask_path'):
+        row_root=Path(path).resolve().parent if row.get('schema_version')=='functional_role_annotation/1.0' else root
+        for key in ('image', 'mask_path', 'mask'):
             if row.get(key):
-                row[key]=str((root/row[key]).resolve())
+                row[key]=str((row_root/row[key]).resolve())
         if 'masks' in row:
             row['masks']={k: str((root/v).resolve()) if v is not None else None for k,v in row['masks'].items()}
         if 'source' in row and 'data_source' not in row:
             row['data_source']=row['source']
+        if row.get('schema_version')=='functional_role_annotation/1.0':
+            row['data_source']=row['id'].split('/',1)[0]
     return out
 
 @lru_cache(maxsize=1)
@@ -92,6 +98,10 @@ def format_valid(reply):
     return bool(re.fullmatch(pattern,reply.strip()))
 
 def ground_truth(row):
+    if row.get('mask'):
+        from egoafford.data import load_masks
+        path=Path(row['mask'])
+        return load_masks(dict(row,mask=path.name),path.parent)
     if 'masks' in row:
         return _png_masks(row)
     return sparse(row['mask_path'])[row['mask_index']]

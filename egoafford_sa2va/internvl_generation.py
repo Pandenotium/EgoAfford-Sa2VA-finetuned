@@ -1,3 +1,7 @@
+# Copyright (c) 2023 OpenGVLab
+# SPDX-License-Identifier: MIT
+# Modified for EgoAfford (2026): match replacement-tensor dtype to embeddings.
+# See licenses/InternVL-MIT.txt and THIRD_PARTY_NOTICES.md.
 """InternVL native image-token replacement with matching embedding dtype.
 
 Adapted from OpenGVLab InternVL3-8B modeling_internvl_chat.py, generate().

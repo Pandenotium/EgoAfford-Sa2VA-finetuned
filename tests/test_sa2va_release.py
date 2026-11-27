@@ -77,6 +77,28 @@ class Sa2VAReleaseTests(unittest.TestCase):
             self.assertEqual(native['component_wise'][role]['NE_mIoU'],
                              values['component_wise'][role]['NE_mIoU'])
 
+    def test_public_named_npz(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            masks = np.zeros((3, 5, 7), dtype=bool)
+            masks[0, :2, :2] = True
+            np.savez_compressed(root / 'roles.npz', **dict(zip(ROLES, masks)))
+            row = dict(id='synthetic/example', schema_version='functional_role_annotation/1.0',
+                       mask='roles.npz', image=None, height=5, width=7, action='Lift the cup',
+                       names=dict(zip(ROLES, ['cup', None, None])))
+            (root / 'test.jsonl').write_text(json.dumps(row) + '\n')
+            with patch.dict(os.environ, {'EGOAFFORD_DATA_ROOT': str(root/'legacy-root')}):
+                parsed = rows(root / 'test.jsonl')[0]
+            self.assertEqual(parsed['data_source'], 'synthetic')
+            np.testing.assert_array_equal(ground_truth(parsed), masks)
+            from egoafford.data import load_masks
+            np.testing.assert_array_equal(load_masks(row, root), masks)
+            from egoafford.data import validate_manifest
+            self.assertEqual(validate_manifest(root/'test.jsonl', root)['missing_group_ids'],1)
+            answer, result, _ = target(parsed, 'emit_empty')
+            self.assertIn('instrument: None;', answer)
+            np.testing.assert_array_equal(result, masks)
+
     def test_recipe_resolves_without_private_paths(self):
         root = Path(__file__).resolve().parents[1]
         with patch.dict(os.environ):

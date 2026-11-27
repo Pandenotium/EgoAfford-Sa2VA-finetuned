@@ -1,0 +1,17 @@
+EgoAfford: Sa2VA training, inference and benchmark tools
+Copyright (c) 2026 EgoAfford contributors.
+
+Original EgoAfford code and release modifications are licensed under the
+Apache License, Version 2.0. Third-party code retains its original copyright
+and license terms.
+
+This distribution includes a focused Sa2VA source snapshot, SAM2 code,
+OpenMMLab utilities, an InternVL-derived generation helper, and DAVIS-style
+segmentation metrics. The SAM2 CUDA connected-components implementation
+includes code distributed under a separate BSD 3-Clause license.
+
+See THIRD_PARTY_NOTICES.md for component locations, source links, license
+texts and release modifications. Original source headers are retained.
+
+Dataset annotations, original media and separately downloaded pretrained
+weights have their own terms; this code license does not relicense them.

@@ -23,3 +23,9 @@ All three GT masks are required, including empty masks. They must be binary, sin
 Relative asset paths resolve against `EGOAFFORD_DATA_ROOT`, if set, or the manifest directory otherwise. This path convention does not alter labels or pixels. Keep `data_source`/`source` accurate: the original training path reconciles names and empty masks for synthetic samples, while real samples retain their supplied annotations.
 
 Prompt construction and the supervised answer are in `egoafford_sa2va/protocol.py`. Image preprocessing is in `dataset_internvl.py`: InternVL dynamic patches (448 px, maximum 12 plus thumbnail), and a direct 1024 px resize for SAM2. Predictions are interpolated back to the original image dimensions before thresholding at 0.5.
+
+## v2 named-channel NPZ
+
+The v2 package uses `mask` with `schema_version="functional_role_annotation/1.0"`. It contains one Boolean H×W array per O/I/D role, with paths relative to the manifest directory. The reader supports this format directly and preserves its final labels; it does not reapply the legacy synthetic name/mask repair. Real images remain user-supplied, as described in `DATA_FORMAT.md`.
+
+Public IDs are opaque. For these manifests the inference summary omits the legacy ID-prefix scene count; source-group statistics belong to the separate release split audit.

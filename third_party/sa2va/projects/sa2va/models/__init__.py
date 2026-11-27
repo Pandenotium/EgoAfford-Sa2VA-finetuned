@@ -1,3 +1,5 @@
+# Modified for the EgoAfford release (2026): remove unused SAM3 exports.
+# See THIRD_PARTY_NOTICES.md; upstream Apache-2.0 terms are retained.
 from .sa2va import Sa2VAModel
 from .sam2_train import SAM2TrainRunner
 

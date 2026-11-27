@@ -1,3 +1,6 @@
+# Modified for the EgoAfford release (2026): finalized v2 annotation compatibility.
+# SPDX-License-Identifier: Apache-2.0
+# See THIRD_PARTY_NOTICES.md and docs/SOURCE_PROVENANCE.md.
 """SC07 native image mixin, direct quarter members; syn alt only, real off."""
 import torch
 from PIL import Image
@@ -30,7 +33,8 @@ class ImageProcessor(Sa2VADatasetMixin):
 
 class EgoAffordDataset(torch.utils.data.Dataset):
     def __init__(self,manifest,processor_path,mode='minimal_user',policy='emit_empty',max_length=8192):
-        self.rows=[dict(row,training_policy='alt' if row.get('data_source')=='synthetic' else 'off') for row in rows(manifest)]
+        self.rows=[dict(row,training_policy='alt' if row.get('data_source')=='synthetic'
+                       and row.get('schema_version')!='functional_role_annotation/1.0' else 'off') for row in rows(manifest)]
         self.processor=ImageProcessor(processor_path);self.tokenizer=self.processor.tokenizer
         self.mode,self.policy,self.max_length=mode,policy,max_length
 

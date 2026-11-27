@@ -44,7 +44,9 @@ def main():
     for row in items:
         if not isinstance(row['action'], str) or not row['action'].strip():
             parser.error('Every sample must have a non-empty action')
-        if args.evaluate and not ('masks' in row or 'mask_path' in row):
+        if not row.get('image') or not Path(row['image']).is_file():
+            parser.error('Image unavailable for ' + row['id'] + '; real images must be obtained and aligned locally')
+        if args.evaluate and not ('masks' in row or 'mask_path' in row or 'mask' in row):
             parser.error('--evaluate requires GT masks for every sample')
 
     import torch
@@ -55,8 +57,12 @@ def main():
     torch.cuda.set_device(0)
     model, processor, _ = load_native(None)
     # Original trainer checkpoints may include non-tensor metadata.
-    payload = torch.load(checkpoint, map_location='cpu', mmap=True,
-                         weights_only=not args.trusted_checkpoint)
+    if checkpoint.suffix == '.safetensors':
+        from safetensors.torch import load_file
+        payload = load_file(str(checkpoint), device='cpu')
+    else:
+        payload = torch.load(checkpoint, map_location='cpu', mmap=True,
+                             weights_only=not args.trusted_checkpoint)
     state = payload.get('state_dict', payload)
     result = model.load_state_dict(state, strict=False)
     missing = model._ego_trainable_keys.intersection(result.missing_keys)
@@ -86,7 +92,11 @@ def main():
                 records.append(record)
             print(f'{min(start + len(batch), len(items))}/{len(items)}', flush=True)
     if args.evaluate:
-        atomic(output / 'metrics.json', aggregate(records))
+        metrics = aggregate(records)
+        if any(row.get('schema_version') == 'functional_role_annotation/1.0' for row in items):
+            # Public IDs are opaque hashes, not the original scene/image hierarchy.
+            metrics.pop('num_scenes', None)
+        atomic(output / 'metrics.json', metrics)
     atomic(output / 'inference.json', dict(config=Path(args.config).name,
            checkpoint=checkpoint.name, samples=len(items), prompt=x['prompt'], policy=x['policy']))
 

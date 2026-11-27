@@ -1,3 +1,6 @@
+# Modified for the EgoAfford release (2026): portable paths and launch configuration.
+# SPDX-License-Identifier: Apache-2.0
+# See THIRD_PARTY_NOTICES.md and docs/SOURCE_PROVENANCE.md.
 """Paper recipe with portable paths and an explicit effective batch size."""
 import json,os,sys
 from pathlib import Path

@@ -22,3 +22,17 @@ Fixed splits:
 | Synthetic | 13,706 | — | 488 |
 
 IDs and episode/generated-task groups must not cross train, validation and test within a source. A repeated action or object concept alone is not split leakage. The release validator must report missing group provenance as incomplete, rather than assuming no overlap.
+
+## v2 annotation package
+
+The verified export uses `schema_version="functional_role_annotation/1.0"` and one `mask` NPZ per sample. This is also accepted by the benchmark and native Sa2VA mask loaders. Each NPZ contains exactly three Boolean H×W arrays named `direct_object`, `instrument`, and `destination`. It preserves the original mask pixels without a PNG conversion.
+
+Example:
+
+```json
+{"id":"synthetic/example","schema_version":"functional_role_annotation/1.0","split":"test","action":"Lift the cup","height":480,"width":640,"names":{"direct_object":"cup","instrument":null,"destination":null},"image":"images/example.png","mask":"masks/example.npz"}
+```
+
+These asset paths resolve relative to the manifest directory, including in the native Sa2VA reader. Real records have `image=null` and retain `upstream` source references. Obtain and align the original media separately, then provide a local inference/training manifest with image paths; the public package supplies no Real RGB frames. The supplied image-reader example is an interface for local images, not a verified MCAP-to-anchor reconstruction pipeline.
+
+For release manifests, `validate` reports missing group identifiers instead of inferring that splits are disjoint. Real source identifiers come from `upstream.source_id`; Synthetic scene references are in `synthetic/selection_index.jsonl`. The release's separate split audit uses these references. The NPZ format does not change the prediction JSONL/PNG contract above.

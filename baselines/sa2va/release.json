@@ -1,6 +1,6 @@
 {
   "release": "v2",
-  "status": "private_code_review",
+  "status": "code_release",
   "backbone": "InternVL3-8B",
   "segmenter": "SAM2-Hiera-L",
   "upstream_commit": "b6fed1a7928ad4adfa124f1fe79031c1f58ec7a1",
@@ -14,9 +14,58 @@
     "real": 0.6112409121889908,
     "synthetic": 0.6716102716741557
   },
-  "model_files": [],
+  "model_files": [
+    "model.safetensors",
+    "config.json",
+    "CONVERSION.json",
+    "pretrained_components.json"
+  ],
   "training_entrypoint": "scripts/train.sh",
   "inference_entrypoint": "scripts/predict.py",
   "config": "configs/sa2va_8b.json",
-  "checkpoint_verification": "fresh-checkout GPU smoke test pending"
+  "checkpoint_verification": "535 tensors verified against epoch18; GPU inference verified; recommended 8-H100 short training and checkpoint save/resume verified",
+  "model_export_format": "native state_dict in safetensors; pretrained components required",
+  "gpu_acceptance": {
+    "date": "2026-11-27",
+    "gpu": "RTX 4090, approximately 48 GB",
+    "samples": 4,
+    "inference_batch_sizes": [
+      1,
+      2
+    ],
+    "inference_verified": true,
+    "native_portable_evaluator_parity": true,
+    "unit_tests_passed": 15,
+    "training_status": "forward/backward reached AdamW state initialization; CUDA OOM on 48 GB",
+    "training_checkpoint_reload_verified": false,
+    "clean_dependency_install_verified": false,
+    "dependency_mode": "isolated source snapshot, original binary dependencies reused",
+    "quickstart_batch_size": 1
+  },
+  "training_acceptance": {
+    "date": "2026-11-27",
+    "status": "passed",
+    "gpu": "8 x NVIDIA H100 80 GB",
+    "world_size": 8,
+    "micro_batch": 2,
+    "gradient_accumulation": 2,
+    "effective_batch": 32,
+    "full_manifest_samples": 39956,
+    "configured_epochs": 40,
+    "max_dynamic_patch": 12,
+    "micro_iterations": 4,
+    "optimizer_updates": 2,
+    "finite_losses": true,
+    "changed_lora_probe": true,
+    "ddp_probe_hashes_match": true,
+    "checkpoint_trainable_tensors": 535,
+    "checkpoint_bytes": 17301931678,
+    "model_restore_verified": true,
+    "optimizer_step_restore_verified": true,
+    "scheduler_resume_verified": true,
+    "train_peak_allocated_gib": 51.650726318359375,
+    "clean_dependency_install_verified": false,
+    "dependency_mode": "Original binary dependencies reused; missing system GL libraries staged in task-local directory",
+    "resume_metadata_loading": "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 temporarily enabled for the job-owned checkpoint"
+  }
 }

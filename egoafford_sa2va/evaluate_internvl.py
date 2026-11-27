@@ -1,3 +1,6 @@
+# Modified for the EgoAfford release (2026): trained-state completeness checks.
+# SPDX-License-Identifier: Apache-2.0
+# See THIRD_PARTY_NOTICES.md and docs/SOURCE_PROVENANCE.md.
 """Batched native InternVL generation; current-image SAM2 masks and O/I/D mapping."""
 import os
 import numpy as np

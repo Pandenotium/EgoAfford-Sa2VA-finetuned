@@ -39,6 +39,18 @@ def relative_file(root, name):
 
 
 def load_masks(row, root, shape=None, allow_absent=False):
+    if row.get('mask'):
+        path = relative_file(root, row['mask'])
+        with np.load(path, allow_pickle=False) as z:
+            if set(z.files) != set(ROLES):
+                raise ValueError(f'{path}: NPZ must explicitly name O/I/D.')
+            values = [z[role] for role in ROLES]
+        if any(a.dtype != np.bool_ or a.ndim != 2 for a in values):
+            raise ValueError(f'{path}: expected three Boolean HxW arrays.')
+        result = np.stack(values)
+        if shape is not None and result.shape[1:] != tuple(shape):
+            raise ValueError(f'{path}: mask size mismatch; resizing is not implicit.')
+        return result
     mapping = row.get('masks')
     if not isinstance(mapping, dict) or set(mapping) != set(ROLES):
         raise ValueError(f'{row.get("id")}: masks must explicitly name O/I/D.')
@@ -67,17 +79,27 @@ def load_masks(row, root, shape=None, allow_absent=False):
 def validate_manifest(path, root, check_images=False):
     records = read_jsonl(path)
     groups = set()
+    missing_groups = 0
     for row in records.values():
         if not isinstance(row.get('action'), str) or not row['action'].strip():
             raise ValueError(f'{row["id"]}: missing action')
-        if row.get('source') not in ('real', 'synthetic'):
+        released = row.get('schema_version') == 'functional_role_annotation/1.0'
+        source = row.get('source') or (row['id'].split('/',1)[0] if released else None)
+        if source not in ('real', 'synthetic'):
             raise ValueError(f'{row["id"]}: source must be real or synthetic')
-        if not isinstance(row.get('group_id'), str) or not row['group_id']:
-            raise ValueError(f'{row["id"]}: missing episode/task group_id')
-        groups.add((row['source'], row['group_id']))
+        group = row.get('group_id') or (row.get('upstream',{}).get('source_id') if released else None)
+        if not isinstance(group, str) or not group:
+            if not released:
+                raise ValueError(f'{row["id"]}: missing episode/task group_id')
+            missing_groups += 1
+        else:
+            groups.add((source, group))
         masks = load_masks(row, root)
+        if released and masks.shape[1:] != (row['height'],row['width']):
+            raise ValueError(f'{row["id"]}: annotated dimensions differ from masks')
         if check_images:
             with Image.open(relative_file(root, row.get('image'))) as image:
                 if image.size != masks.shape[:0:-1]:
                     raise ValueError(f'{row["id"]}: image and masks have different dimensions')
-    return dict(num_samples=len(records), num_groups=len(groups))
+    return dict(num_samples=len(records), num_groups=None if missing_groups else len(groups),
+                missing_group_ids=missing_groups)

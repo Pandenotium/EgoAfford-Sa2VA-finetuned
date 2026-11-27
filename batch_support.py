@@ -1,3 +1,6 @@
+# Modified for the EgoAfford release (2026): supervised-row CE memory optimization.
+# SPDX-License-Identifier: Apache-2.0
+# See THIRD_PARTY_NOTICES.md and docs/SOURCE_PROVENANCE.md.
 """Cluster micro-batches, fixed effective batch and sample-normalized CE."""
 import json,os
 from pathlib import Path
@@ -29,7 +32,9 @@ def sequence_ce(logits,labels):
  for scores,target in zip(logits,labels):
   target=target[1:];valid=target!=-100
   if not valid.any():raise ValueError('No shifted supervised tokens')
-  values.append(F.cross_entropy(scores[:-1].float().reshape(-1,scores.shape[-1]),target.reshape(-1),ignore_index=-100))
+  # Ignored prompt/image positions contribute neither loss nor gradient.
+  # Select supervised rows before FP32 conversion to avoid a full T×V copy.
+  values.append(F.cross_entropy(scores[:-1][valid].float(),target[valid]))
  return torch.stack(values)
 
 def install_sequence_mean(model):
